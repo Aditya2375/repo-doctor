@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Repo Doctor - a second opinion on any public repository</title>
+<meta name="description" content="Paste a public GitHub link. Four reviewers check architecture, security, performance and style and point to the exact file and line.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23151412'/%3E%3Cpath d='M13 7h6v6h6v6h-6v6h-6v-6H7v-6h6z' fill='%23ff5a3c'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="top"><a class="brand" href="./"><svg viewBox="0 0 32 32" width="22" height="22" aria-hidden="true"><rect width="32" height="32" rx="8" fill="#151412"/><path d="M13 7h6v6h6v6h-6v6h-6v-6H7v-6h6z" fill="#ff5a3c"/></svg><span>Repo Doctor</span></a><span class="tag">rule-based static analysis</span></header>
+
+<main>
+<section class="hero" id="hero">
+  <p class="eyebrow">A second opinion for any public repository</p>
+  <h1>Paste a repo.<br><em>Get the chart.</em></h1>
+  <p class="lede">Four reviewers read the code: architecture, security, performance and style. Every finding points to the exact file and line, with why it matters and how to fix it.</p>
+  <form id="form" class="ask" autocomplete="off">
+    <label class="sr" for="url">GitHub repository URL</label>
+    <input id="url" type="text" inputmode="url" spellcheck="false" placeholder="github.com/owner/repo" autofocus>
+    <button id="go" type="submit">Examine</button>
+  </form>
+  <p class="try">Try <button class="chip" data-u="pallets/click">pallets/click</button><button class="chip" data-u="sindresorhus/got">sindresorhus/got</button><button class="chip" data-u="expressjs/express">expressjs/express</button></p>
+  <p class="err" id="err" role="alert" hidden></p>
+</section>
+
+<section class="run" id="run" hidden aria-live="polite">
+  <div class="run-h"><span class="pulse"></span><b id="runTitle">Reading the repository</b></div>
+  <div class="bar"><i id="bar"></i></div>
+  <p class="mono dim" id="runSub"></p>
+</section>
+
+<section class="report" id="report" hidden>
+  <div class="rep-h">
+    <div>
+      <p class="eyebrow" id="rMeta"></p>
+      <h2 id="rName"></h2>
+      <p class="dim" id="rDesc"></p>
+    </div>
+    <div class="acts"><button class="ghost" id="dlMd">Download report (.md)</button><button class="ghost" id="dlJson">Download (.json)</button><button class="ghost" id="again">Another repo</button></div>
+  </div>
+  <p class="note" id="rNote" hidden></p>
+
+  <div class="crew" id="crew"></div>
+
+  <div class="filters">
+    <div class="seg" id="fRev" role="group" aria-label="Reviewer"></div>
+    <div class="seg" id="fSev" role="group" aria-label="Severity"></div>
+  </div>
+  <p class="count mono dim" id="count"></p>
+  <ol class="list" id="list"></ol>
+
+  <aside class="limits">
+    <h3>What this can and cannot tell you</h3>
+    <ul>
+      <li>These are pattern rules, not a model that understands your program. Some findings will be false alarms, so each one shows the line and a reason so you can judge it.</li>
+      <li>Only files up to 150 KB are read, up to 160 per repository, and vendored or minified code is skipped. The report says when that happened.</li>
+      <li>Nothing is uploaded anywhere. Your browser reads the repository directly from GitHub, and the analysis runs on your device.</li>
+      <li>A clean score is not a security audit. It means these rules found nothing.</li>
+    </ul>
+  </aside>
+</section>
+</main>
+<footer class="foot">Repo Doctor reads public repositories through GitHub's public endpoints. GitHub allows 60 metadata requests an hour per network.</footer>
+
+<script src="analyzers.js"></script>
+<script src="github.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
