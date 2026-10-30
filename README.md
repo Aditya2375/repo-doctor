@@ -4,6 +4,8 @@ Paste a public GitHub repository link and get a review report from four reviewer
 
 It is rule-based static analysis that runs in your browser. There is no AI model and no server. The page reads the repository straight from GitHub and the analysis runs on your device.
 
+Live: https://repo-doctor-cyan.vercel.app
+
 ## Use it
 
 Open `index.html` through any static server, for example:
