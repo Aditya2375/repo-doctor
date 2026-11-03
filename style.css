@@ -60,3 +60,5 @@ h2{font:400 clamp(36px,6vw,60px)/1 'Instrument Serif',serif;margin:0 0 8px;overf
 @media(max-width:860px){.crew{grid-template-columns:1fr 1fr}}
 @media(max-width:520px){.ask{flex-direction:column;border-radius:22px;padding:12px;box-shadow:4px 4px 0 var(--ink)}.ask input{padding:8px 8px}.ask button{width:100%}.hero{padding-top:40px}.f>button{grid-template-columns:auto 1fr}.who{display:none}.crew{gap:10px}.rev{padding:15px}.top .tag{display:none}.chip{margin:6px 6px 0 0}}
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+.skip-link{position:fixed;top:-80px;left:14px;background:#151412;color:#fff;padding:12px;z-index:1000}.skip-link:focus{top:14px}:focus-visible{outline:2px solid #d6371b;outline-offset:4px}#cancel{margin-top:16px;padding:10px 16px;cursor:pointer}@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
