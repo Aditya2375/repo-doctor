@@ -2,6 +2,7 @@
   'use strict';
   var $ = function (s) { return document.querySelector(s); };
   var REV = [['architecture', 'Architect'], ['security', 'Security'], ['performance', 'Performance'], ['style', 'Style']];
+  var activeReview = null, reviewId = 0;
   var state = { data: null, res: null, rev: 'all', sev: 'all', spec: null };
 
   function h(tag, attrs, kids) {
@@ -90,7 +91,7 @@
   }
 
   function markdown() {
-    var d = state.data, s = state.spec, L = ['# Repo Doctor report: ' + s.owner + '/' + s.repo, '', 'Branch: ' + d.ref + '. Files read: ' + d.fetched + ' of ' + d.tree.length + '. Rule-based static analysis, not a security audit.', '', '| Reviewer | Score | Findings |', '|---|---|---|'];
+    var d = state.data, s = state.spec, L = ['# Repo Doctor report: ' + s.owner + '/' + s.repo, '', 'Branch: ' + d.branch + '. Commit: ' + d.ref + '. Files read: ' + d.fetched + ' of ' + d.tree.length + '. Rule-based static analysis, not a security audit.', '', 'Coverage: up to 160 text files, 150 KB each; excludes vendored/minified code. Unreadable candidates: '+d.failures.length+'. Truncated tree: '+d.truncatedTree+'. Truncated file list: '+d.truncatedList+'.', '', '| Reviewer | Score | Findings |', '|---|---|---|'];
     REV.forEach(function (r) { L.push('| ' + r[1] + ' | ' + RepoDoctor.score(state.res.findings, r[0]) + ' | ' + state.res.findings.filter(function (f) { return f.reviewer === r[0]; }).length + ' |'); });
     REV.forEach(function (r) {
       var fs = state.res.findings.filter(function (f) { return f.reviewer === r[0]; });
@@ -101,36 +102,44 @@
     return L.join('\n') + '\n';
   }
   function download(name, text, type) {
-    var a = h('a', { href: URL.createObjectURL(new Blob([text], { type: type })), download: name }); document.body.appendChild(a); a.click(); a.remove();
+    var a = h('a', { href: URL.createObjectURL(new Blob([text], { type: type })), download: name }); document.body.appendChild(a); a.click(); a.remove(); setTimeout(function(){URL.revokeObjectURL(a.href);},1000);
   }
 
   async function examine(raw) {
     fail('');
     var spec = RepoGitHub.parseUrl(raw);
     if (!spec) { fail('That does not look like a GitHub repository. Use a link like github.com/owner/repo.'); return; }
+    if(activeReview)activeReview.abort();
+    var controller=new AbortController(),id=++reviewId;activeReview=controller;
     state.spec = spec; $('#go').disabled = true; show('#report', false); show('#run', true);
     $('#bar').style.width = '4%'; $('#runTitle').textContent = 'Reading ' + spec.owner + '/' + spec.repo; $('#runSub').textContent = 'Asking GitHub for the file list';
     try {
       var data = await RepoGitHub.load(spec, function (k, p) {
+        if(id!==reviewId)return;
         if (k === 'tree') { $('#runSub').textContent = 'Branch ' + p.ref + '. Listing files'; $('#bar').style.width = '12%'; }
         else { $('#bar').style.width = (12 + 78 * p.done / Math.max(1, p.total)) + '%'; $('#runSub').textContent = p.done + ' of ' + p.total + ' files  ' + p.path; }
-      });
+      },controller.signal);
+      if(id!==reviewId||controller.signal.aborted)return;
       $('#runTitle').textContent = 'Four reviewers are reading'; $('#bar').style.width = '95%';
       await new Promise(function (r) { setTimeout(r, 30); });
+      if(id!==reviewId||controller.signal.aborted)return;
       var res = RepoDoctor.analyze({ tree: data.tree, files: data.files });
       state.data = data; state.res = res; state.rev = 'all'; state.sev = 'all';
       show('#run', false); render(); show('#hero', false); show('#report', true); window.scrollTo(0, 0);
     } catch (e) {
-      show('#run', false); fail(e.message || 'Something went wrong while reading the repository.');
-    } finally { $('#go').disabled = false; }
+      if(id!==reviewId)return;
+      show('#run', false); fail(e.name==='AbortError'?'Review cancelled. No report was produced.':e.message || 'Something went wrong while reading the repository.');
+    } finally { if(id===reviewId){$('#go').disabled = false;activeReview=null;} }
   }
 
   function render() {
     var d = state.data, s = state.spec, i = d.info;
-    $('#rMeta').textContent = 'Branch ' + d.ref + '  /  ' + d.fetched + ' of ' + d.tree.length + ' files read' + (i.language ? '  /  ' + i.language : '');
+    $('#rMeta').textContent = 'Commit ' + d.ref.slice(0,12) + ' ('+d.branch+')' + '  /  ' + d.fetched + ' of ' + d.tree.length + ' files read' + (i.language ? '  /  ' + i.language : '');
     $('#rName').textContent = s.owner + '/' + s.repo;
     $('#rDesc').textContent = i.description || '';
     var notes = [];
+    notes.push('Heuristic findings only, not a security audit or proof of safety. Files above 150 KB, vendored code and non-text files are not reviewed.');
+    if(d.failures&&d.failures.length)notes.push(d.failures.length+' candidate file(s) could not be read. This report is incomplete.');
     if (d.truncatedList) notes.push('This repository has more readable files than the 160-file limit, so the smallest paths were read first.');
     if (d.truncatedTree) notes.push('GitHub returned a truncated file list for this very large repository.');
     if (state.res.skippedMinified.length) notes.push(state.res.skippedMinified.length + ' minified file(s) were skipped.');
@@ -140,10 +149,11 @@
     renderCrew(); renderFilters(); renderList();
   }
 
+  $('#cancel').addEventListener('click',function(){if(activeReview)activeReview.abort();});
   $('#form').addEventListener('submit', function (e) { e.preventDefault(); examine($('#url').value); });
   document.querySelectorAll('.chip').forEach(function (c) { c.addEventListener('click', function () { $('#url').value = c.dataset.u; examine(c.dataset.u); }); });
   $('#dlMd').addEventListener('click', function () { download(state.spec.repo + '-repo-doctor.md', markdown(), 'text/markdown'); });
-  $('#dlJson').addEventListener('click', function () { download(state.spec.repo + '-repo-doctor.json', JSON.stringify({ repo: state.spec.owner + '/' + state.spec.repo, branch: state.data.ref, scores: REV.reduce(function (o, r) { o[r[0]] = RepoDoctor.score(state.res.findings, r[0]); return o; }, {}), findings: state.res.findings }, null, 2), 'application/json'); });
+  $('#dlJson').addEventListener('click', function () { download(state.spec.repo + '-repo-doctor.json', JSON.stringify({ repo: state.spec.owner + '/' + state.spec.repo, branch: state.data.branch, commit: state.data.ref, failures:state.data.failures, incomplete:!!(state.data.truncatedTree||state.data.truncatedList||state.data.failures.length), scores: REV.reduce(function (o, r) { o[r[0]] = RepoDoctor.score(state.res.findings, r[0]); return o; }, {}), findings: state.res.findings }, null, 2), 'application/json'); });
   $('#again').addEventListener('click', function () { show('#report', false); show('#hero', true); $('#url').value = ''; $('#url').focus(); });
   var q = new URLSearchParams(location.search).get('repo'); if (q) { $('#url').value = q; examine(q); }
 })();
