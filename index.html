@@ -4,16 +4,23 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Repo Doctor - a second opinion on any public repository</title>
+<link rel="canonical" href="https://repo-doctor-cyan.vercel.app/">
+<meta name="referrer" content="no-referrer">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data:; connect-src https://api.github.com https://raw.githubusercontent.com; object-src 'none'; base-uri 'self'; form-action 'none'">
+<meta property="og:title" content="Repo Doctor / A second opinion">
+<meta property="og:description" content="Bounded, rule-based review of public GitHub code. Findings are heuristics, not proof of safety.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://repo-doctor-cyan.vercel.app/">
+<meta name="twitter:card" content="summary">
 <meta name="description" content="Paste a public GitHub link. Four reviewers check architecture, security, performance and style and point to the exact file and line.">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23151412'/%3E%3Cpath d='M13 7h6v6h6v6h-6v6h-6v-6H7v-6h6z' fill='%23ff5a3c'/%3E%3C/svg%3E">
-<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="fonts.css">
 <link rel="stylesheet" href="style.css">
 </head>
-<body>
+<body><a class="skip-link" href="#main">Skip to review</a>
 <header class="top"><a class="brand" href="./"><svg viewBox="0 0 32 32" width="22" height="22" aria-hidden="true"><rect width="32" height="32" rx="8" fill="#151412"/><path d="M13 7h6v6h6v6h-6v6h-6v-6H7v-6h6z" fill="#ff5a3c"/></svg><span>Repo Doctor</span></a><span class="tag">rule-based static analysis</span></header>
 
-<main>
+<main id="main" tabindex="-1">
 <section class="hero" id="hero">
   <p class="eyebrow">A second opinion for any public repository</p>
   <h1>Paste a repo.<br><em>Get the chart.</em></h1>
@@ -30,7 +37,7 @@
 <section class="run" id="run" hidden aria-live="polite">
   <div class="run-h"><span class="pulse"></span><b id="runTitle">Reading the repository</b></div>
   <div class="bar"><i id="bar"></i></div>
-  <p class="mono dim" id="runSub"></p>
+  <p class="mono dim" id="runSub"></p><button type="button" id="cancel">Cancel review</button>
 </section>
 
 <section class="report" id="report" hidden>
