@@ -39,3 +39,10 @@ Scores start at 100. Findings subtract points by severity, and one noisy rule ca
 ```
 node --test tests/analyzers.test.js
 ```
+
+
+## Review boundaries and failure handling
+
+A report is pinned to an immutable commit SHA, including its file links and exports. Reading uses three GitHub API requests (metadata, commit and tree), then up to 160 raw text files of150KB each across six workers. Requests time out after20seconds, cancellation reaches every stage, and response bodies have byte limits. Some file failures produce an explicitly incomplete report; zero readable candidates produces an error, not a clean bill of health. Rate-limit or access errors are shown without retry loops.
+
+No sign-in, token collection or server storage. Only public repositories. All findings are rule-based heuristics that can miss vulnerabilities and produce false positives, never proof of safety or a substitute for a security audit. Coverage excludes large files, vendored/minified code and unsupported formats. Tests: `node --test tests/*.test.js`. No runtime/build dependencies. GitHub/Vercel control service availability and hosting headers.
