@@ -1,0 +1,2 @@
+# Repo Doctor
+Bounded browser-based rule review of public GitHub code, pinned to one commit. Heuristics are not a security audit or proof of safety. Partial-file failures are disclosed. No account or token.
