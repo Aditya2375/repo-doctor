@@ -1,2 +1,0 @@
-# Repo Doctor
-Browser-based pattern-rule review of public GitHub code. Real reviews are pinned to an immutable commit. The clearly labelled local example has no commit and makes no GitHub requests. Findings are heuristics, not a security audit or proof of safety. Coverage limits and partial failures are disclosed. No account or token is requested.
