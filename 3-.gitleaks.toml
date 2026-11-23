@@ -1,0 +1,7 @@
+[extend]
+useDefault = true
+[[allowlists]]
+description = "Exact synthetic analyzer test fixture, not a credential"
+regexTarget = "secret"
+regexes = ['''AKIAABCDEFGHIJKLMNOP''']
+paths = ['''tests/analyzers\.test\.js''']
